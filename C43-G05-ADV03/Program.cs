@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 
+#region Q-01
 public class Book
 {
     public string ISBN { get; set; }
@@ -33,19 +35,46 @@ public class BookFunctions
         return propertyDelegate(book);
     }
 }
+#endregion
+#region Q-2
+public class LibraryEngine
+{
+    public static void ProcessBooks<T>(List<Book> bList, Func<Book, T> fPtr)
+    {
+        foreach (Book b in bList)
+        {
+            Console.WriteLine(fPtr(b));
+        }
+    }
+}
+#endregion
+
+
 
 class Program
 {
     static void Main()
     {
-        Book myBook = new Book("12345", "C# Programming", new string[] { "sayed mohamed ", "mohamed sayed " }, DateTime.Now, 49.99m);
+        List<Book> books = new List<Book>
+        {
+            new Book("12345", "C# Programming", new string[] { "sayed mohamed ", "mohamed sayed " }, DateTime.Now, 49.99m),
+            new Book("67890", "Advanced C#", new string[] { "Alice Brown", "Bob White" }, DateTime.Now.AddYears(-1), 59.99m)
+        };
 
-        string title = BookFunctions.GetProperty(myBook, b => b.Title);
-        string authors = BookFunctions.GetProperty(myBook, b => string.Join(", ", b.Authors));
-        decimal price = BookFunctions.GetProperty(myBook, b => b.Price);
+        //  1. (User Defined Delegate) 
+        LibraryEngine.ProcessBooks(books, b => BookFunctions.GetProperty(b, x => x.Title));
 
-        Console.WriteLine($"Title: {title}");
-        Console.WriteLine($"Authors: {authors}");
-        Console.WriteLine($"Price: {price:C}");
+        //  2.  Delegate     Func<T, TResult> 
+        LibraryEngine.ProcessBooks(books, b => b.ISBN);
+
+        //  3.  Anonymous Method 
+        LibraryEngine.ProcessBooks(books, delegate (Book b) { return b.Authors.Length > 0 ? b.Authors[0] : "No Author"; });
+
+        //  4.  Lambda Expression لتاريخ النشر 
+        LibraryEngine.ProcessBooks(books, b => b.PublicationDate.ToShortDateString());
+
+        //  5. fun  ترجع أي خاصية 
+        string firstBookPrice = BookFunctions.GetProperty(books[0], b => b.Price.ToString("C"));
+        Console.WriteLine($"Price of first book: {firstBookPrice}");
     }
 }
